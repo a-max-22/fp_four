@@ -63,11 +63,3 @@ class BoardState:
     score:int
     board:Board
 
-
-def initialize_game(size:int) -> BoardState:
-    assert size > 0, "initialize_game: board size has to be > 0, actual is %s" \
-                      % size
-
-    board = make_empty_board(size)
-    board = board_fill_with_random_cells(board)
-    return BoardState(0, board)
