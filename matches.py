@@ -20,13 +20,6 @@ class Match:
     len:int
 
 
-def add_match_if_valid(matches:List[Match], row:int, col:int, length:int,\
-                       direction:Direction) -> List[Match]:
-    if length >= MATCH_LENGTH:
-        matches.append(Match(direction, row, col, length))
-    return matches
-
-
 def find_continuous_subsequences(items: Iterator[tuple[int,Any]],\
                                  desired_sequence_len:int,
                                  compare_func:Callable,\
