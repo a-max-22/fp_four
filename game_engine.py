@@ -1,13 +1,14 @@
 from game import Element, make_empty_element, is_element_empty, make_random_element,\
                  Board,  make_empty_board, clone_board, clone_element,\
-                 board_fill_with_random_cells
+                 board_fill_with_random_cells,\
+                 BoardState
 from matches import Match, find_matches,  get_indices_for_matches
-from typing import List, Callable, TypeVar, Iterator
+from typing import List
 from itertools import filterfalse, product
 
 BOARD_DEFAULT_SIZE = 8 
 
-E = TypeVar('E')
+
 
 def draw(board:Board):
     sep = ' ' 
@@ -57,7 +58,7 @@ def remove_matches(board:Board, matches:List[Match]) -> Board:
     return ready_board
 
 
-def fill_empty_spaces(board:Board):
+def fill_empty_spaces(board:Board) -> Board:
     rows_num = board.size
     cols_num = board.size
     for (row, col) in product(range(cols_num), range(rows_num)):
@@ -77,15 +78,23 @@ def process_cascade(board:Board) -> Board:
     return process_cascade(board)
 
 
+def initialize_game(board_size:int) -> BoardState:
+    assert board_size > 0, "initialize_game: board size has to be > 0, actual is %s" \
+                      % board_size
+
+    board = make_empty_board(board_size)
+    board = board_fill_with_random_cells(board)
+    board = process_cascade(board)
+    return BoardState(0, board)
+
 
 if __name__ == "__main__":
     board = make_and_draw_board(BOARD_DEFAULT_SIZE)
-    board = make_and_draw_board(BOARD_DEFAULT_SIZE)
     matches = find_matches(board)
     print(matches)
-    board_with_erased_elems = erase_matched_elements(board, matches)
-    draw(board_with_erased_elems)
-    board_with_applied_gravity = apply_gravity(board_with_erased_elems)
-    draw(board_with_applied_gravity)
-    filled_board = fill_empty_spaces(board_with_applied_gravity)
-    draw(filled_board)
+    after_removal = erase_matched_elements(board, matches)
+    draw(after_removal)
+    after_gravity = apply_gravity(after_removal)
+    draw(after_gravity)
+    after_filling = fill_empty_spaces(after_gravity)
+    draw(after_filling)
