@@ -5,6 +5,7 @@ from game import Element, make_empty_element, is_element_empty, make_random_elem
 from matches import Match, find_matches,  get_indices_for_matches
 from typing import List
 from itertools import filterfalse, product
+from pipe import Pipe
 
 BOARD_DEFAULT_SIZE = 8 
 
@@ -51,12 +52,13 @@ def erase_matched_elements(board:Board, matches:List[Match]) -> Board:
     
     return new_board
     
-
 def remove_matches(board:Board, matches:List[Match]) -> Board:
+    draw(board)
+    print(matches)
     new_board = erase_matched_elements(board, matches)    
     ready_board = apply_gravity(new_board)
+    draw(ready_board)
     return ready_board
-
 
 def fill_empty_spaces(board:Board) -> Board:
     rows_num = board.size
@@ -65,7 +67,7 @@ def fill_empty_spaces(board:Board) -> Board:
         if not is_element_empty(board.cells[row][col]):
             continue
         board.cells[row][col] = make_random_element()
-
+    draw(board)
     return board
 
 
@@ -73,19 +75,24 @@ def process_cascade(board:Board) -> Board:
     matches:List[Match] = find_matches(board)
     if matches == []:
         return board
-    board = remove_matches(board, matches)
-    board = fill_empty_spaces(board)
-    return process_cascade(board)
+    
+    result_board = board | \
+                   Pipe(remove_matches, matches) | \
+                   Pipe(fill_empty_spaces)
+    return process_cascade(result_board)
+
 
 
 def initialize_game(board_size:int) -> BoardState:
     assert board_size > 0, "initialize_game: board size has to be > 0, actual is %s" \
                       % board_size
 
-    board = make_empty_board(board_size)
-    board = board_fill_with_random_cells(board)
-    board = process_cascade(board)
+    board = make_empty_board(board_size) | \
+            Pipe(board_fill_with_random_cells) | \
+            Pipe(process_cascade) 
+    
     return BoardState(0, board)
+
 
 
 if __name__ == "__main__":
