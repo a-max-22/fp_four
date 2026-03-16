@@ -11,7 +11,7 @@ BOARD_DEFAULT_SIZE = 8
 
 
 
-def draw(board:Board):
+def draw(board:Board) -> Board:
     sep = ' ' 
     size:int = board.size
     
@@ -21,6 +21,8 @@ def draw(board:Board):
         print(i,sep, *board.cells[i], sep = sep)  
     print()
     print('-' * (size * 2 + 3))
+
+    return board
 
 
 def make_and_draw_board(size:int) -> Board:
@@ -51,14 +53,15 @@ def erase_matched_elements(board:Board, matches:List[Match]) -> Board:
         new_board.cells[row][col] = make_empty_element()
     
     return new_board
-    
+
+
 def remove_matches(board:Board, matches:List[Match]) -> Board:
     draw(board)
-    print(matches)
     new_board = erase_matched_elements(board, matches)    
     ready_board = apply_gravity(new_board)
     draw(ready_board)
     return ready_board
+
 
 def fill_empty_spaces(board:Board) -> Board:
     rows_num = board.size
@@ -71,16 +74,20 @@ def fill_empty_spaces(board:Board) -> Board:
     return board
 
 
+def remove_matches_and_fill_board(board:Board, matches:List[Match]) -> Board:
+    return  board | Pipe(remove_matches, matches) | \
+                    Pipe(draw) | \
+                    Pipe(fill_empty_spaces) | \
+                    Pipe(draw)      
+
+
 def process_cascade(board:Board) -> Board:
     matches:List[Match] = find_matches(board)
     if matches == []:
         return board
     
-    result_board = board | \
-                   Pipe(remove_matches, matches) | \
-                   Pipe(fill_empty_spaces)
+    result_board = remove_matches_and_fill_board(board, matches)
     return process_cascade(result_board)
-
 
 
 def initialize_game(board_size:int) -> BoardState:
@@ -95,6 +102,7 @@ def initialize_game(board_size:int) -> BoardState:
 
 
 
+
 if __name__ == "__main__":
     board = make_and_draw_board(BOARD_DEFAULT_SIZE)
     matches = find_matches(board)
@@ -105,3 +113,4 @@ if __name__ == "__main__":
     draw(after_gravity)
     after_filling = fill_empty_spaces(after_gravity)
     draw(after_filling)
+
